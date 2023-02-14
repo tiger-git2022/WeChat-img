@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- Import Vue 3 -->
+    <script src="https://unpkg.com/vue@3"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <!-- Import component library -->
+    <script src="https://unpkg.com/element-plus"></script>
+    <title>礼物查询</title>
+</head>
+<body>
+   <div id="search" style="display: flex; flex-direction: column;">
+    <div>
+       <el-select 
+    placeholder="请选择礼物或者输入文字搜索" 
+    clearable 
+    filterable 
+    no-match-text="没有找到礼物"
+    v-model="searchText">
+      <el-option
+      v-for="item in options"
+      :label="item.label"
+      :value="item.value"
+      :key="item.value"
+      />
+    </el-select>
+    </div>
+    <div>
+      <el-tree
+      class="filter-tree"
+      :data="data"
+      ref="tree"
+      :props="defaultProps"
+      :filter-node-method="filterNode">
+        <template #default="{ node,data }">
+          <span>{{data.label}}</span><span>
+            <!-- <img src="https://img.game8.co/3624864/20f05f8ba04bf7f4ebdf1ef5b5736e40.png/show" style="height: 1.5rem; margin-left: 0.5rem;"></img> -->
+          </span>
+        </template>
+      </el-tree>
+    </div>
+  
+   </div>
+   <script>
+    const App = {
+      data() {
+        return {
+          searchText: "",
+          options: [],
+          names: [],
+          data: [],
+          defaultProps: {children: 'children',label: 'label',},
+          giftChoose: [
+            ['安巴,克萝艾,洁德,菈琵思,玫琳,蜜丝提拉'],
+            ['波聂,锡莉奴,佛贾特,芙岚,戈尔德玛莉,奥尔坦希亚,玫琳,帕涅托涅,庞德罗,罗萨德,蜜丝提拉,赛安达斯'],
+            ['帝亚曼德,艾堤耶,贾恩,花月,莫布,札菲亚,尤娜卡,阿尔弗雷德'],
+            ['安巴,克萝艾,戈尔德玛莉,奥尔坦希亚,洁德,贾恩,菈琵思,玫琳,罗萨德,蜜丝提拉'],
+            ['安巴,克萝艾,洁德,贾恩,菈琵思,玫琳,帕涅托涅,蜜丝提拉'],
+            ['芙岚,贝珥,莫布'],
+            ['安娜,戈尔德玛莉,奥尔坦希亚,罗萨德'],
+            ['波聂,佛贾特,莫布,贝珥'],
+            ['阿尔弗雷德,布修隆,锡莉奴,克萝艾,柯岚,艾堤耶,芙岚,艾比,贾恩,路易,庞德罗,凡德雷'],
+            ['波聂,克萝艾,帝亚曼德,艾堤耶,佛贾特,花月,莫布,玫琳,帕涅托涅,赛安达斯,蜜丝提拉'],
+            ['史塔卢克,布修隆,锡莉奴,希特丽妮卡,柯岚,帝亚曼德,艾比,洁德,贾恩,霖丹,赛安达斯,贝珥,尤娜卡,杰尔科巴'],
+            ['史塔卢克,布修隆,锡莉奴,希特丽妮卡,克萝艾,柯岚,艾比,洁德,贾恩,霖丹,庞德罗,赛安达斯,贝珥'],
+            ['帝亚曼德,花月,玫琳,帕涅托涅,尤娜卡,莫布,札菲亚'],
+            ['安巴,克萝艾,洁德,菈琵思,玫琳,帕涅托涅,贾恩'],
+            ['安娜,史塔卢克,希特丽妮卡,柯岚,帝亚曼德,奥尔坦希亚,艾比,洁德,贾恩,霖丹,凡德雷'],
+            ['史塔卢克,布修隆,帝亚曼德,札菲亚'],
+            ['阿尔弗雷德,波聂,锡莉奴,希特丽妮卡,艾堤耶,佛贾特,芙岚,戈尔德玛莉,奥尔坦希亚,路易,莫布,罗萨德,贝珥'],
+            ['阿尔弗雷德,佛贾特,玫琳,庞德罗,赛安达斯,蜜丝提拉,尤娜卡'],
+            ['安娜,布修隆,佛贾特,戈尔德玛莉,奥尔坦希亚,艾比,花月,霖丹,罗萨德,杰尔科巴'],
+            ['安巴,安娜,波聂,柯岚,佛贾特,戈尔德玛莉,霖丹,路易,庞德罗,罗萨德,札菲亚,蜜丝提拉,杰尔科巴'],
+            ['阿尔弗雷德,锡莉奴,艾堤耶,路易,莫布,贝珥'],
+            ['希特丽妮卡,莫布,贝珥'],
+            ['安娜,锡莉奴,希特丽妮卡,佛贾特,芙岚,戈尔德玛莉,奥尔坦希亚,花月,庞德罗,罗萨德,赛安达斯,蜜丝提拉,贝珥'],
+            ['戈尔德玛莉,奥尔坦希亚,莫布,罗萨德,贝珥'],
+            ['史塔卢克,阿尔弗雷德,安巴,希特丽妮卡,帝亚曼德,艾堤耶,芙岚,洁德,花月,菈琵思,莫布,札菲亚,尤娜卡'],
+            ['史塔卢克,希特丽妮卡,柯岚,帝亚曼德,艾比,贾恩,霖丹'],
+            ['佛贾特,花月,庞德罗,罗萨德,札菲亚,蜜丝提拉,贝珥'],
+            ['史塔卢克,布修隆,锡莉奴,克萝艾,柯岚,艾比,洁德,贾恩,霖丹,路易,贝珥,尤娜卡,杰尔科巴，赛安达斯'],
+            ['安娜,锡莉奴,希特丽妮卡,柯岚,芙岚,戈尔德玛莉,奥尔坦希亚,罗萨德,赛安达斯,蜜丝提拉,凡德雷'],
+            ['安巴,波聂,菈琵思,霖丹,札菲亚'],
+            ['安娜,菈琵思,凡德雷,杰尔科巴'],
+            ['安娜,帝亚曼德,花月,菈琵思,霖丹,莫布,玫琳,帕涅托涅,尤娜卡,杰尔科巴，霖丹'],
+            ['安娜,菈琵思,凡德雷,杰尔科巴'],
+            ['克萝艾,莫布,帕涅托涅,贝珥'],
+            ['帕涅托涅'],
+            ['锡莉奴,芙岚,戈尔德玛莉,奥尔坦希亚,罗萨德,赛安达斯,蜜丝提拉'],
+            ['史塔卢克,阿尔弗雷德,布修隆,波聂,克萝艾,芙岚,戈尔德玛莉,奥尔坦希亚,艾比,洁德,霖丹,罗萨德,赛安达斯,贝珥'],
+            ['安巴,安娜,波聂,锡莉奴,希特丽妮卡,柯岚,艾堤耶,戈尔德玛莉,艾比,贾恩,霖丹,路易,杰尔科巴'],
+            ['阿尔弗雷德,帝亚曼德,艾堤耶,芙岚,花月,菈琵思,莫布,札菲亚,尤娜卡'],
+            ['安巴,安娜,帝亚曼德,花月,菈琵思,莫布,玫琳,帕涅托涅,札菲亚,尤娜卡,杰尔科巴'],
+            ['阿尔弗雷德,安巴,安娜,波聂,柯岚,戈尔德玛莉,艾比,菈琵思,霖丹,路易,赛安达斯,杰尔科巴'],
+            ['安娜,安巴,波聂,庞德罗,札菲亚'],
+          ],
+          giftName: [
+            '动物用的木天蓼',
+            '鹿角耳饰',
+            '绷带',
+            '熊木雕',
+            '捕虫网',
+            '菊花',
+            '可爱围裙',
+            '小松菜花',
+            '神圣龙书',
+            '坚硬肉干',
+            '艾雷欧斯历史书',
+            '奇妙的童话绘本',
+            '装饰短剑',
+            '生物图鉴',
+            '高级羽毛笔',
+            '钓饵',
+            '手作花环',
+            '号角',
+            '风景明信片',
+            '巨大盘子',
+            '扁豆花',
+            '百合花',
+            '美丽的蜡烛',
+            '羽扇豆花',
+            '外用肌肉增强剂',
+            '深奥的哲学书',
+            '桌游用纸牌',
+            '世界各国诗集',
+            '高级手帕',
+            '行家烤番薯',
+            '裁缝套组',
+            '锋利雕刻刀',
+            '羊毛线球',
+            '超辣调味料',
+            '诡异符咒',
+            '香气浓郁的香水',
+            '遮阳帽',
+            '现摘茶叶',
+            '锻炼用的重石',
+            '多功能折叠刀',
+            '白三叶草',
+            '严选酸奶',
+          ],
+        };
+      },
+      watch: {
+        searchText(val) {
+          this.$refs.tree.filter(val);
+        }
+      },
+      mounted: function() {
+        // this.setLabel(this.giftName,this.options)
+        // this.setData()
+        this.giftChoose = this.separateData(this.giftChoose)
+        this.mergeData(this.giftName, this.giftChoose, this.names)
+      },
+      methods: {
+        setData() {
+          this.setLabel(this.giftName,this.data)
+          for (let i = 0; i < 2; i++) {
+            // this.data[i].children = this.changeLabel(this.children[i])
+          }
+        },
+        setLabel(array,result) {
+          array.forEach(item => {
+            result.push({label: item,value: item,children:[]})
+          })
+        },
+        changeLabel(array) {
+          let result = []
+          array.forEach(item => {
+            result.push({label: item,value: item,children:[]})
+          })
+          return result
+        },
+        mergeData(gift, people) {
+          let result = []
+          gift.forEach((item,index) => {
+            result.push(
+              {
+                title: item,
+                name: index,
+                npcPrefer: [...people[index]? people[index] : []]
+              }
+            )
+          })
+        },
+        separateData() {
+          this.giftChoose = this.giftChoose.map(item => item[0].split(','))
+        },
+        filterNode(value,data,node) {
+          if (!value) {
+            node.expanded = false
+            return true
+          }
+          if (node.level > 1) {
+            return node.parent.data.label.includes(value)
+          }
+          if (node.level = 1) {
+            return node.data.label.includes(value)
+          }
+        },
+      },
+    };
+    const app = Vue.createApp(App);
+    app.use(ElementPlus);
+    app.mount("#search");
+  </script>
+</body>
+</html>
+
